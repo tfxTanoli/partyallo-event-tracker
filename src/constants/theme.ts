@@ -90,7 +90,7 @@ export const GlobalStyles = StyleSheet.create({
   },
   card: {
     backgroundColor: Colors.white,
-    borderRadius: Radius.xl,
+    borderRadius: Radius['2xl'],
     padding: Spacing.base,
     borderWidth: 1,
     borderColor: Colors.border,

@@ -30,7 +30,7 @@ export function Card({ children, style, padding = Spacing.base, noBorder = false
 const styles = StyleSheet.create({
   card: {
     backgroundColor: Colors.white,
-    borderRadius: Radius.xl,
+    borderRadius: Radius['2xl'],
     borderWidth: 1,
     borderColor: Colors.border,
     ...Shadow.sm,

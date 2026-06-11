@@ -15,14 +15,13 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useApp } from '../../context/AppContext';
 import { Colors, StatusColors } from '../../constants/colors';
 import { Spacing, FontSize, FontWeight, Radius, Shadow } from '../../constants/theme';
-import { Card } from '../../components/common/Card';
 import { Badge } from '../../components/common/Badge';
 import { SearchBar } from '../../components/common/SearchBar';
 import { FilterTabs } from '../../components/common/FilterTabs';
 import { EmptyState } from '../../components/common/EmptyState';
 import { ProgressBar } from '../../components/common/ProgressBar';
 import { PackingStackParamList, Event } from '../../types';
-import { formatDate, formatTime, getEventProgress, getDaysUntilEvent } from '../../utils/helpers';
+import { formatDate, getEventProgress, getDaysUntilEvent } from '../../utils/helpers';
 
 type Nav = NativeStackNavigationProp<PackingStackParamList, 'PackingHome'>;
 
@@ -65,55 +64,94 @@ export function PackingHomeScreen() {
   };
 
   const renderEvent = ({ item: event }: { item: Event }) => {
-    const { packed, loaded, total } = getEventProgress(event);
+    const { packed, total } = getEventProgress(event);
     const days = getDaysUntilEvent(event.date);
     const isSelected = selectedEventId === event.id;
+    const isUrgent = days >= 0 && days <= 2;
+    const packedPct = total > 0 ? Math.round((packed / total) * 100) : 0;
+    const statusColor = StatusColors[event.status]?.text ?? Colors.slate[400];
 
     return (
-      <TouchableOpacity activeOpacity={0.85} onPress={() => handleSelectEvent(event)}>
-        <Card style={[styles.card, isSelected ? styles.cardSelected : null]}>
-          <View style={[styles.statusBar, { backgroundColor: StatusColors[event.status]?.text ?? Colors.slate[300] }]} />
+      <TouchableOpacity
+        activeOpacity={0.85}
+        onPress={() => handleSelectEvent(event)}
+      >
+        <View style={[styles.card, isSelected && styles.cardSelected]}>
+          {/* Status stripe */}
+          <View style={[styles.statusBar, { backgroundColor: statusColor }]} />
+
           <View style={styles.cardContent}>
+            {/* Top section */}
             <View style={styles.cardTop}>
+              {/* Date pill */}
               <View style={styles.datePill}>
-                <Text style={styles.dateDay}>{new Date(event.date).getDate()}</Text>
-                <Text style={styles.dateMonth}>{new Date(event.date).toLocaleString('default', { month: 'short' })}</Text>
+                <Text style={styles.dateDay}>
+                  {new Date(event.date).getDate()}
+                </Text>
+                <Text style={styles.dateMonth}>
+                  {new Date(event.date).toLocaleString('default', { month: 'short' })}
+                </Text>
               </View>
+
+              {/* Event info */}
               <View style={styles.eventInfo}>
-                <Text style={styles.eventName} numberOfLines={1}>{event.eventName}</Text>
+                <Text style={styles.eventName} numberOfLines={1}>
+                  {event.eventName}
+                </Text>
                 <Text style={styles.clientName}>{event.clientName}</Text>
-                <View style={styles.row}>
+                <View style={styles.venueRow}>
                   <Ionicons name="location-outline" size={11} color={Colors.textMuted} />
-                  <Text style={styles.venueText} numberOfLines={1}>{event.venue}</Text>
+                  <Text style={styles.venueText} numberOfLines={1}>
+                    {event.venue}
+                  </Text>
                 </View>
               </View>
+
+              {/* Right badges */}
               <View style={styles.rightCol}>
                 <Badge label={event.status} variant="status" />
-                <View style={styles.row}>
+                <View style={styles.stationRow}>
                   <Ionicons name="storefront-outline" size={11} color={Colors.primary[500]} />
-                  <Text style={styles.stationCount}>{event.assignedStationIds.length} stations</Text>
+                  <Text style={styles.stationCount}>
+                    {event.assignedStationIds.length} stations
+                  </Text>
                 </View>
                 {days >= 0 && (
-                  <Text style={[styles.daysText, days <= 2 && styles.daysUrgent]}>
-                    {days === 0 ? 'TODAY' : days === 1 ? 'Tomorrow' : `${days}d away`}
-                  </Text>
+                  <View style={[styles.daysChip, isUrgent && styles.daysChipUrgent]}>
+                    <Text style={[styles.daysText, isUrgent && styles.daysTextUrgent]}>
+                      {days === 0 ? 'TODAY' : days === 1 ? 'Tomorrow' : `${days}d`}
+                    </Text>
+                  </View>
                 )}
               </View>
             </View>
 
+            {/* Progress */}
             {total > 0 && (
               <View style={styles.progressRow}>
-                <ProgressBar value={packed} total={total} color={Colors.primary[500]} showLabel label="Packed" height={5} />
+                <ProgressBar
+                  value={packed}
+                  total={total}
+                  color={Colors.primary[500]}
+                  showLabel
+                  label="Packed"
+                  height={5}
+                />
               </View>
             )}
 
-            <TouchableOpacity style={styles.startBtn} onPress={() => handleSelectEvent(event)} activeOpacity={0.8}>
-              <Ionicons name="cube-outline" size={15} color={Colors.white} />
+            {/* CTA button */}
+            <TouchableOpacity
+              style={styles.startBtn}
+              onPress={() => handleSelectEvent(event)}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="cube-outline" size={16} color={Colors.white} />
               <Text style={styles.startBtnText}>Open Packing Checklist</Text>
-              <Ionicons name="chevron-forward" size={14} color={Colors.white} />
+              <Ionicons name="chevron-forward" size={14} color="rgba(255,255,255,0.8)" />
             </TouchableOpacity>
           </View>
-        </Card>
+        </View>
       </TouchableOpacity>
     );
   };
@@ -129,8 +167,16 @@ export function PackingHomeScreen() {
             <Text style={styles.headerSub}>Select an event to start packing</Text>
           </View>
         </View>
-        <SearchBar value={search} onChangeText={setSearch} placeholder="Search events…" />
-        <FilterTabs tabs={tabsWithCounts} activeKey={filter} onSelect={setFilter} />
+        <SearchBar
+          value={search}
+          onChangeText={setSearch}
+          placeholder="Search events…"
+        />
+        <FilterTabs
+          tabs={tabsWithCounts}
+          activeKey={filter}
+          onSelect={setFilter}
+        />
       </View>
 
       <FlatList
@@ -158,47 +204,141 @@ export function PackingHomeScreen() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: Colors.background },
+
   header: {
     backgroundColor: Colors.white,
     paddingHorizontal: Spacing.base,
     paddingTop: Spacing.md,
     paddingBottom: Spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.divider,
+    borderBottomColor: Colors.border,
     gap: Spacing.md,
     ...Shadow.xs,
   },
-  headerTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  headerTitle: { fontSize: FontSize['2xl'], fontWeight: FontWeight.bold, color: Colors.textPrimary },
-  headerSub: { fontSize: FontSize.xs, color: Colors.textMuted, marginTop: 1 },
+  headerTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  headerTitle: {
+    fontSize: FontSize['2xl'],
+    fontWeight: FontWeight.bold,
+    color: Colors.textPrimary,
+  },
+  headerSub: {
+    fontSize: FontSize.xs,
+    color: Colors.textMuted,
+    marginTop: 1,
+  },
 
   list: { padding: Spacing.base, gap: Spacing.sm, paddingBottom: Spacing['4xl'] },
-  card: { overflow: 'hidden', flexDirection: 'row', padding: 0 },
-  cardSelected: { borderColor: Colors.primary[400], borderWidth: 2 },
+
+  card: {
+    backgroundColor: Colors.white,
+    borderRadius: Radius['2xl'],
+    borderWidth: 1,
+    borderColor: Colors.border,
+    flexDirection: 'row',
+    overflow: 'hidden',
+    ...Shadow.sm,
+  },
+  cardSelected: {
+    borderColor: Colors.primary[400],
+    borderWidth: 2,
+  },
   statusBar: { width: 4 },
   cardContent: { flex: 1, padding: Spacing.md, gap: Spacing.sm },
-  cardTop: { flexDirection: 'row', gap: Spacing.sm },
-  datePill: { width: 44, height: 50, backgroundColor: Colors.primary[50], borderRadius: Radius.md, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: Colors.primary[100] },
-  dateDay: { fontSize: FontSize.xl, fontWeight: FontWeight.bold, color: Colors.primary[700], lineHeight: 24 },
-  dateMonth: { fontSize: 10, fontWeight: FontWeight.semibold, color: Colors.primary[500], textTransform: 'uppercase' },
+  cardTop: { flexDirection: 'row', gap: Spacing.sm, alignItems: 'flex-start' },
+
+  datePill: {
+    width: 46,
+    minHeight: 52,
+    backgroundColor: Colors.primary[50],
+    borderRadius: Radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: Colors.primary[100],
+    paddingVertical: Spacing.xs,
+  },
+  dateDay: {
+    fontSize: FontSize['2xl'],
+    fontWeight: FontWeight.extrabold,
+    color: Colors.primary[700],
+    lineHeight: 26,
+  },
+  dateMonth: {
+    fontSize: 10,
+    fontWeight: FontWeight.bold,
+    color: Colors.primary[500],
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+
   eventInfo: { flex: 1 },
-  eventName: { fontSize: FontSize.md, fontWeight: FontWeight.semibold, color: Colors.textPrimary },
-  clientName: { fontSize: FontSize.sm, color: Colors.textSecondary, marginTop: 1 },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 3, marginTop: 2 },
-  venueText: { fontSize: FontSize.xs, color: Colors.textMuted, flex: 1 },
-  rightCol: { alignItems: 'flex-end', gap: 4 },
-  stationCount: { fontSize: FontSize.xs, color: Colors.primary[600], fontWeight: FontWeight.medium },
-  daysText: { fontSize: FontSize.xs, fontWeight: FontWeight.bold, color: Colors.textMuted },
-  daysUrgent: { color: Colors.rose[500] },
+  eventName: {
+    fontSize: FontSize.md,
+    fontWeight: FontWeight.bold,
+    color: Colors.textPrimary,
+  },
+  clientName: {
+    fontSize: FontSize.sm,
+    color: Colors.textSecondary,
+    marginTop: 1,
+  },
+  venueRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    marginTop: 3,
+  },
+  venueText: {
+    fontSize: FontSize.xs,
+    color: Colors.textMuted,
+    flex: 1,
+  },
+
+  rightCol: { alignItems: 'flex-end', gap: 5 },
+  stationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+  },
+  stationCount: {
+    fontSize: FontSize.xs,
+    color: Colors.primary[600],
+    fontWeight: FontWeight.semibold,
+  },
+  daysChip: {
+    backgroundColor: Colors.slate[100],
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 2,
+    borderRadius: Radius.full,
+  },
+  daysChipUrgent: { backgroundColor: Colors.rose[50] },
+  daysText: {
+    fontSize: FontSize.xs,
+    fontWeight: FontWeight.bold,
+    color: Colors.textMuted,
+  },
+  daysTextUrgent: { color: Colors.rose[500] },
+
   progressRow: {},
+
   startBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: Spacing.xs,
     backgroundColor: Colors.primary[600],
-    paddingVertical: Spacing.sm,
-    borderRadius: Radius.lg,
+    paddingVertical: Spacing.sm + 1,
+    borderRadius: Radius.xl,
   },
-  startBtnText: { fontSize: FontSize.sm, fontWeight: FontWeight.semibold, color: Colors.white, flex: 1, textAlign: 'center' },
+  startBtnText: {
+    fontSize: FontSize.sm,
+    fontWeight: FontWeight.bold,
+    color: Colors.white,
+    flex: 1,
+    textAlign: 'center',
+  },
 });

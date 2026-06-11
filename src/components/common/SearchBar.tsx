@@ -2,7 +2,7 @@ import React from 'react';
 import { View, TextInput, StyleSheet, TouchableOpacity, ViewStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../constants/colors';
-import { Radius, Spacing, FontSize, Shadow } from '../../constants/theme';
+import { Radius, Spacing, FontSize } from '../../constants/theme';
 
 interface SearchBarProps {
   value: string;
@@ -11,10 +11,15 @@ interface SearchBarProps {
   style?: ViewStyle;
 }
 
-export function SearchBar({ value, onChangeText, placeholder = 'Search…', style }: SearchBarProps) {
+export function SearchBar({
+  value,
+  onChangeText,
+  placeholder = 'Search…',
+  style,
+}: SearchBarProps) {
   return (
     <View style={[styles.container, style]}>
-      <Ionicons name="search" size={16} color={Colors.textMuted} style={styles.icon} />
+      <Ionicons name="search-outline" size={16} color={Colors.textMuted} style={styles.icon} />
       <TextInput
         value={value}
         onChangeText={onChangeText}
@@ -24,10 +29,14 @@ export function SearchBar({ value, onChangeText, placeholder = 'Search…', styl
         autoCapitalize="none"
         autoCorrect={false}
         clearButtonMode="while-editing"
+        returnKeyType="search"
       />
       {value.length > 0 && (
-        <TouchableOpacity onPress={() => onChangeText('')} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-          <Ionicons name="close-circle" size={16} color={Colors.textMuted} />
+        <TouchableOpacity
+          onPress={() => onChangeText('')}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        >
+          <Ionicons name="close-circle" size={16} color={Colors.slate[400]} />
         </TouchableOpacity>
       )}
     </View>
@@ -38,13 +47,12 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.slate[50],
     borderWidth: 1.5,
     borderColor: Colors.border,
     borderRadius: Radius.xl,
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
-    ...Shadow.xs,
   },
   icon: {
     marginRight: Spacing.sm,

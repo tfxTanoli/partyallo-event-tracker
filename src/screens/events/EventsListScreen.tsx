@@ -5,7 +5,6 @@ import {
   FlatList,
   StyleSheet,
   TouchableOpacity,
-  Alert,
   StatusBar,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -16,7 +15,6 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useApp } from '../../context/AppContext';
 import { Colors, StatusColors } from '../../constants/colors';
 import { Spacing, FontSize, FontWeight, Radius, Shadow } from '../../constants/theme';
-import { Card } from '../../components/common/Card';
 import { Badge } from '../../components/common/Badge';
 import { Button } from '../../components/common/Button';
 import { SearchBar } from '../../components/common/SearchBar';
@@ -74,25 +72,26 @@ export function EventsListScreen() {
 
   const handlePackNow = (event: Event) => {
     selectEventForPacking(event.id);
-    // Navigate to Packing tab — done via tab navigator
   };
 
   const renderEvent = ({ item: event }: { item: Event }) => {
     const { packed, loaded, total } = getEventProgress(event);
     const days = getDaysUntilEvent(event.date);
-    const packedPct = total > 0 ? Math.round((packed / total) * 100) : 0;
-    const loadedPct = total > 0 ? Math.round((loaded / total) * 100) : 0;
+    const isUrgent = days >= 0 && days < 3;
+    const statusColor = StatusColors[event.status]?.text ?? Colors.slate[400];
 
     return (
-      <Card style={styles.card}>
-        {/* Status stripe */}
-        <View style={[styles.statusStripe, { backgroundColor: StatusColors[event.status]?.text ?? Colors.slate[300] }]} />
+      <View style={styles.card}>
+        {/* Status accent stripe */}
+        <View style={[styles.statusStripe, { backgroundColor: statusColor }]} />
 
         <View style={styles.cardContent}>
           {/* Header row */}
           <View style={styles.cardHeader}>
             <View style={styles.cardTitleBlock}>
-              <Text style={styles.eventName} numberOfLines={1}>{event.eventName}</Text>
+              <Text style={styles.eventName} numberOfLines={1}>
+                {event.eventName}
+              </Text>
               <Text style={styles.clientName}>{event.clientName}</Text>
             </View>
             <Badge label={event.status} variant="status" />
@@ -116,44 +115,62 @@ export function EventsListScreen() {
 
           <View style={styles.metaItem}>
             <Ionicons name="location-outline" size={12} color={Colors.textMuted} />
-            <Text style={styles.metaText} numberOfLines={1}>{event.venue}</Text>
+            <Text style={styles.metaText} numberOfLines={1}>
+              {event.venue}
+            </Text>
           </View>
 
-          {/* Stations */}
-          {event.assignedStationIds.length > 0 && (
-            <View style={styles.stationsRow}>
-              <Ionicons name="storefront-outline" size={12} color={Colors.primary[500]} />
-              <Text style={styles.stationsText}>
-                {event.assignedStationIds.length} station{event.assignedStationIds.length !== 1 ? 's' : ''}
-              </Text>
-            </View>
-          )}
+          {/* Stations & days row */}
+          <View style={styles.tagsRow}>
+            {event.assignedStationIds.length > 0 && (
+              <View style={styles.stationChip}>
+                <Ionicons name="storefront-outline" size={11} color={Colors.primary[600]} />
+                <Text style={styles.stationChipText}>
+                  {event.assignedStationIds.length} station
+                  {event.assignedStationIds.length !== 1 ? 's' : ''}
+                </Text>
+              </View>
+            )}
+            {event.status !== 'Completed' && (
+              <View style={[styles.daysChip, isUrgent && styles.daysChipUrgent]}>
+                <Ionicons
+                  name="alarm-outline"
+                  size={10}
+                  color={isUrgent ? Colors.rose[500] : Colors.textMuted}
+                />
+                <Text style={[styles.daysText, isUrgent && styles.daysTextUrgent]}>
+                  {days === 0
+                    ? 'Today!'
+                    : days === 1
+                    ? 'Tomorrow'
+                    : days < 0
+                    ? `${Math.abs(days)}d overdue`
+                    : `${days}d away`}
+                </Text>
+              </View>
+            )}
+          </View>
 
-          {/* Progress */}
+          {/* Progress bars */}
           {total > 0 && (
             <View style={styles.progressBlock}>
-              <ProgressBar value={packed} total={total} color={Colors.primary[500]} showLabel label="Packed" height={5} />
-              <ProgressBar value={loaded} total={total} color={Colors.emerald[500]} showLabel label="Loaded" height={5} style={{ marginTop: 4 }} />
-            </View>
-          )}
-
-          {/* Days chip */}
-          {event.status !== 'Completed' && (
-            <View style={[styles.daysChip, days < 3 && days >= 0 ? styles.daysChipUrgent : null]}>
-              <Ionicons
-                name="alarm-outline"
-                size={11}
-                color={days < 3 && days >= 0 ? Colors.rose[500] : Colors.textMuted}
+              <ProgressBar
+                value={packed}
+                total={total}
+                color={Colors.primary[500]}
+                showLabel
+                label="Packed"
+                height={5}
               />
-              <Text style={[styles.daysText, days < 3 && days >= 0 ? styles.daysTextUrgent : null]}>
-                {days === 0
-                  ? 'Today!'
-                  : days === 1
-                  ? 'Tomorrow'
-                  : days < 0
-                  ? `${Math.abs(days)}d overdue`
-                  : `${days} days away`}
-              </Text>
+              <ProgressBar
+                value={loaded}
+                total={total}
+                color={Colors.emerald[500]}
+                showLabel
+                label="Loaded"
+                height={5}
+                style={{ marginTop: 5 }}
+              />
             </View>
           )}
 
@@ -183,7 +200,7 @@ export function EventsListScreen() {
             </TouchableOpacity>
           </View>
         </View>
-      </Card>
+      </View>
     );
   };
 
@@ -196,20 +213,21 @@ export function EventsListScreen() {
         <View style={styles.headerTop}>
           <View>
             <Text style={styles.headerTitle}>Events</Text>
-            <Text style={styles.headerSub}>{events.length} total events</Text>
+            <Text style={styles.headerSub}>
+              {events.length} total event{events.length !== 1 ? 's' : ''}
+            </Text>
           </View>
           <Button
             label="New Event"
             onPress={() => navigation.navigate('EventForm', {})}
             size="sm"
-            icon={<Ionicons name="add" size={14} color={Colors.white} />}
+            icon={<Ionicons name="add" size={15} color={Colors.white} />}
           />
         </View>
         <SearchBar
           value={search}
           onChangeText={setSearch}
           placeholder="Search events, clients, venues…"
-          style={styles.searchBar}
         />
         <FilterTabs tabs={tabsWithCounts} activeKey={statusFilter} onSelect={setStatusFilter} />
       </View>
@@ -224,7 +242,11 @@ export function EventsListScreen() {
           <EmptyState
             icon="calendar-outline"
             title={search ? 'No results found' : 'No events yet'}
-            description={search ? 'Try a different search term.' : 'Tap "New Event" to create your first event.'}
+            description={
+              search
+                ? 'Try a different search term.'
+                : 'Tap "New Event" to create your first event.'
+            }
             actionLabel={search ? undefined : 'Create Event'}
             onAction={search ? undefined : () => navigation.navigate('EventForm', {})}
             style={{ marginTop: Spacing['3xl'] }}
@@ -247,13 +269,15 @@ export function EventsListScreen() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: Colors.background },
+
+  // ─── Header ──────────────────────────────────────────────────────────────
   header: {
     backgroundColor: Colors.white,
     paddingHorizontal: Spacing.base,
     paddingTop: Spacing.md,
     paddingBottom: Spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.divider,
+    borderBottomColor: Colors.border,
     gap: Spacing.md,
     ...Shadow.xs,
   },
@@ -262,22 +286,36 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  headerTitle: { fontSize: FontSize['2xl'], fontWeight: FontWeight.bold, color: Colors.textPrimary },
-  headerSub: { fontSize: FontSize.xs, color: Colors.textMuted, marginTop: 1 },
-  searchBar: {},
+  headerTitle: {
+    fontSize: FontSize['2xl'],
+    fontWeight: FontWeight.bold,
+    color: Colors.textPrimary,
+  },
+  headerSub: {
+    fontSize: FontSize.xs,
+    color: Colors.textMuted,
+    marginTop: 1,
+  },
+
+  // ─── List ─────────────────────────────────────────────────────────────────
   list: {
     padding: Spacing.base,
     gap: Spacing.sm,
     paddingBottom: Spacing['4xl'],
   },
+
+  // ─── Event card ───────────────────────────────────────────────────────────
   card: {
-    overflow: 'hidden',
+    backgroundColor: Colors.white,
+    borderRadius: Radius['2xl'],
+    borderWidth: 1,
+    borderColor: Colors.border,
     flexDirection: 'row',
-    padding: 0,
+    overflow: 'hidden',
+    ...Shadow.sm,
   },
   statusStripe: {
     width: 4,
-    borderRadius: 0,
   },
   cardContent: {
     flex: 1,
@@ -289,34 +327,80 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'flex-start',
   },
-  cardTitleBlock: { flex: 1, marginRight: Spacing.sm },
-  eventName: { fontSize: FontSize.md, fontWeight: FontWeight.semibold, color: Colors.textPrimary },
-  clientName: { fontSize: FontSize.sm, color: Colors.textSecondary, marginTop: 1 },
-  metaRow: { flexDirection: 'row', gap: Spacing.md, flexWrap: 'wrap' },
-  metaItem: { flexDirection: 'row', alignItems: 'center', gap: 3 },
-  metaText: { fontSize: FontSize.xs, color: Colors.textMuted },
-  stationsRow: {
+  cardTitleBlock: {
+    flex: 1,
+    marginRight: Spacing.sm,
+  },
+  eventName: {
+    fontSize: FontSize.md,
+    fontWeight: FontWeight.bold,
+    color: Colors.textPrimary,
+  },
+  clientName: {
+    fontSize: FontSize.sm,
+    color: Colors.textSecondary,
+    marginTop: 1,
+  },
+  metaRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
+    gap: Spacing.md,
+    flexWrap: 'wrap',
     marginTop: 2,
   },
-  stationsText: { fontSize: FontSize.xs, color: Colors.primary[600], fontWeight: FontWeight.medium },
-  progressBlock: { marginTop: Spacing.xs },
+  metaItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+  },
+  metaText: {
+    fontSize: FontSize.xs,
+    color: Colors.textMuted,
+  },
+  tagsRow: {
+    flexDirection: 'row',
+    gap: Spacing.xs,
+    flexWrap: 'wrap',
+    marginTop: 2,
+  },
+  stationChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    backgroundColor: Colors.primary[50],
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 2,
+    borderRadius: Radius.full,
+    borderWidth: 1,
+    borderColor: Colors.primary[100],
+  },
+  stationChipText: {
+    fontSize: FontSize.xs,
+    color: Colors.primary[700],
+    fontWeight: FontWeight.semibold,
+  },
   daysChip: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 3,
-    alignSelf: 'flex-start',
     backgroundColor: Colors.slate[100],
     paddingHorizontal: Spacing.sm,
     paddingVertical: 2,
     borderRadius: Radius.full,
-    marginTop: 2,
   },
-  daysChipUrgent: { backgroundColor: Colors.rose[50] },
-  daysText: { fontSize: FontSize.xs, color: Colors.textMuted, fontWeight: FontWeight.medium },
-  daysTextUrgent: { color: Colors.rose[500] },
+  daysChipUrgent: {
+    backgroundColor: Colors.rose[50],
+  },
+  daysText: {
+    fontSize: FontSize.xs,
+    color: Colors.textMuted,
+    fontWeight: FontWeight.semibold,
+  },
+  daysTextUrgent: {
+    color: Colors.rose[500],
+  },
+  progressBlock: {
+    marginTop: Spacing.xs,
+  },
   cardActions: {
     flexDirection: 'row',
     gap: Spacing.xs,
@@ -328,19 +412,28 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 4,
+    gap: 5,
     backgroundColor: Colors.primary[600],
-    paddingVertical: Spacing.xs + 2,
+    paddingVertical: Spacing.sm,
     borderRadius: Radius.lg,
   },
-  packBtnText: { fontSize: FontSize.sm, fontWeight: FontWeight.semibold, color: Colors.white },
+  packBtnText: {
+    fontSize: FontSize.sm,
+    fontWeight: FontWeight.bold,
+    color: Colors.white,
+  },
   iconBtn: {
-    width: 34,
-    height: 34,
-    borderRadius: Radius.md,
+    width: 36,
+    height: 36,
+    borderRadius: Radius.lg,
     backgroundColor: Colors.primary[50],
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: Colors.primary[100],
   },
-  iconBtnDanger: { backgroundColor: Colors.rose[50] },
+  iconBtnDanger: {
+    backgroundColor: Colors.rose[50],
+    borderColor: Colors.rose[100],
+  },
 });

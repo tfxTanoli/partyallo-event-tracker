@@ -15,7 +15,6 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useApp } from '../../context/AppContext';
 import { Colors, CategoryColors } from '../../constants/colors';
 import { Spacing, FontSize, FontWeight, Radius, Shadow } from '../../constants/theme';
-import { Card } from '../../components/common/Card';
 import { Badge } from '../../components/common/Badge';
 import { AppHeader } from '../../components/common/AppHeader';
 import { ProgressBar } from '../../components/common/ProgressBar';
@@ -66,20 +65,28 @@ export function StationSelectorScreen() {
       />
 
       {/* Event summary banner */}
-      <View style={styles.eventBanner}>
-        <View style={styles.bannerLeft}>
-          <Text style={styles.bannerEvent} numberOfLines={1}>{event.eventName}</Text>
-          <Text style={styles.bannerClient}>{event.clientName}</Text>
-          <View style={styles.bannerMeta}>
-            <Ionicons name="calendar-outline" size={12} color="rgba(255,255,255,0.75)" />
-            <Text style={styles.bannerMetaText}>{event.date} · {event.startTime}</Text>
-            <Ionicons name="people-outline" size={12} color="rgba(255,255,255,0.75)" />
-            <Text style={styles.bannerMetaText}>{event.servings} pax</Text>
+      <View style={styles.eventBannerWrap}>
+        <View style={styles.eventBanner}>
+          <View style={styles.bannerLeft}>
+            <Text style={styles.bannerEvent} numberOfLines={1}>{event.eventName}</Text>
+            <Text style={styles.bannerClient}>{event.clientName}</Text>
+            <View style={styles.bannerMeta}>
+              <Ionicons name="calendar-outline" size={12} color="rgba(255,255,255,0.75)" />
+              <Text style={styles.bannerMetaText}>{event.date} · {event.startTime}</Text>
+              <Ionicons name="people-outline" size={12} color="rgba(255,255,255,0.75)" />
+              <Text style={styles.bannerMetaText}>{event.servings} pax</Text>
+            </View>
+          </View>
+          <View style={styles.bannerRight}>
+            <Text style={styles.bannerPackedNum}>{overallProgress.packed}</Text>
+            <Text style={styles.bannerPackedLabel}>/ {overallProgress.total} packed</Text>
           </View>
         </View>
-        <View style={styles.bannerRight}>
-          <Text style={styles.bannerPackedNum}>{overallProgress.packed}</Text>
-          <Text style={styles.bannerPackedLabel}>/ {overallProgress.total} packed</Text>
+        {/* Rainbow accent strip */}
+        <View style={styles.rainbowStrip}>
+          {Colors.rainbow.map((color, i) => (
+            <View key={i} style={[styles.rainbowSegment, { backgroundColor: color }]} />
+          ))}
         </View>
       </View>
 
@@ -103,7 +110,7 @@ export function StationSelectorScreen() {
 
           return (
             <TouchableOpacity activeOpacity={0.85} onPress={() => handleSelectStation(station.id)}>
-              <Card style={[styles.stationCard, isComplete ? styles.stationCardComplete : null]}>
+              <View style={[styles.stationCard, isComplete ? styles.stationCardComplete : null]}>
                 <View style={styles.stationHeader}>
                   <View style={[styles.stationIcon, { backgroundColor: catColors.bg }]}>
                     <Ionicons
@@ -137,7 +144,7 @@ export function StationSelectorScreen() {
                     <Text style={styles.completeBannerText}>All items packed!</Text>
                   </View>
                 )}
-              </Card>
+              </View>
             </TouchableOpacity>
           );
         }}
@@ -159,12 +166,22 @@ export function StationSelectorScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: Colors.background },
 
+  eventBannerWrap: {
+    overflow: 'hidden',
+  },
   eventBanner: {
-    backgroundColor: Colors.primary[700],
+    backgroundColor: Colors.primary[800],
     padding: Spacing.base,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+  },
+  rainbowStrip: {
+    flexDirection: 'row',
+    height: 4,
+  },
+  rainbowSegment: {
+    flex: 1,
   },
   bannerLeft: { flex: 1 },
   bannerEvent: { fontSize: FontSize.lg, fontWeight: FontWeight.bold, color: Colors.white },
@@ -175,14 +192,28 @@ const styles = StyleSheet.create({
   bannerPackedNum: { fontSize: FontSize['3xl'], fontWeight: FontWeight.bold, color: Colors.white },
   bannerPackedLabel: { fontSize: FontSize.xs, color: 'rgba(255,255,255,0.7)' },
 
-  overallProgress: { backgroundColor: Colors.white, padding: Spacing.base, borderBottomWidth: 1, borderBottomColor: Colors.divider },
+  overallProgress: {
+    backgroundColor: Colors.white,
+    padding: Spacing.base,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
+    gap: Spacing.xs,
+  },
 
   listLabel: { fontSize: FontSize.xs, color: Colors.textMuted, fontWeight: FontWeight.medium, paddingHorizontal: Spacing.base, paddingTop: Spacing.md, paddingBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 },
 
   list: { padding: Spacing.base, gap: Spacing.sm, paddingBottom: Spacing['4xl'] },
 
-  stationCard: { gap: Spacing.sm },
-  stationCardComplete: { borderColor: Colors.emerald[200] },
+  stationCard: {
+    gap: Spacing.sm,
+    backgroundColor: Colors.white,
+    borderRadius: Radius['2xl'],
+    borderWidth: 1,
+    borderColor: Colors.border,
+    padding: Spacing.base,
+    ...Shadow.sm,
+  },
+  stationCardComplete: { borderColor: Colors.emerald[200], backgroundColor: Colors.emerald[50] + '44' },
   stationHeader: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm },
   stationIcon: { width: 44, height: 44, borderRadius: Radius.lg, alignItems: 'center', justifyContent: 'center' },
   stationInfo: { flex: 1, gap: 4 },

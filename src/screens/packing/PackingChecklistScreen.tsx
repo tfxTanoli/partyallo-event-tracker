@@ -6,7 +6,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   TextInput,
-  Alert,
   StatusBar,
   Modal,
   Pressable,
@@ -21,12 +20,11 @@ import { useApp } from '../../context/AppContext';
 import { Colors } from '../../constants/colors';
 import { Spacing, FontSize, FontWeight, Radius, Shadow } from '../../constants/theme';
 import { AppHeader } from '../../components/common/AppHeader';
-import { Badge } from '../../components/common/Badge';
 import { ProgressBar } from '../../components/common/ProgressBar';
 import { Button } from '../../components/common/Button';
 import { EmptyState } from '../../components/common/EmptyState';
 import { PackingStackParamList, PackingItem, PackingItemCategory } from '../../types';
-import { groupItemsByCategory, formatTimestamp, generateId } from '../../utils/helpers';
+import { groupItemsByCategory, generateId } from '../../utils/helpers';
 
 type Nav = NativeStackNavigationProp<PackingStackParamList, 'PackingChecklist'>;
 type RouteType = RouteProp<PackingStackParamList, 'PackingChecklist'>;
@@ -50,7 +48,8 @@ type FilterKey = 'all' | 'unpacked' | 'packed';
 export function PackingChecklistScreen() {
   const navigation = useNavigation<Nav>();
   const route = useRoute<RouteType>();
-  const { events, stations, currentPacker, setCurrentPacker, updatePackingItem, markAllPacked } = useApp();
+  const { events, stations, currentPacker, setCurrentPacker, updatePackingItem, markAllPacked } =
+    useApp();
 
   const event = events.find((e) => e.id === route.params.eventId);
   const station = stations.find((s) => s.id === route.params.stationId);
@@ -63,7 +62,9 @@ export function PackingChecklistScreen() {
 
   const stationItems = useMemo(() => {
     if (!event || !station) return [];
-    return event.packingList.filter((i) => i.stationName === station.name && i.isToPack);
+    return event.packingList.filter(
+      (i) => i.stationName === station.name && i.isToPack
+    );
   }, [event, station]);
 
   const filteredItems = useMemo(() => {
@@ -79,8 +80,8 @@ export function PackingChecklistScreen() {
     loaded: stationItems.filter((i) => i.isLoaded).length,
     total: stationItems.length,
   };
-
-  const pct = progress.total > 0 ? Math.round((progress.packed / progress.total) * 100) : 0;
+  const pct =
+    progress.total > 0 ? Math.round((progress.packed / progress.total) * 100) : 0;
 
   const togglePacked = (item: PackingItem) => {
     if (!currentPacker) {
@@ -106,7 +107,10 @@ export function PackingChecklistScreen() {
   };
 
   const handleMarkAll = () => {
-    if (!currentPacker) { setShowPackerModal(true); return; }
+    if (!currentPacker) {
+      setShowPackerModal(true);
+      return;
+    }
     setShowMarkAllConfirm(true);
   };
 
@@ -125,7 +129,7 @@ export function PackingChecklistScreen() {
   }
 
   const renderItem = ({ item }: { item: PackingItem }) => (
-    <View style={styles.itemRow}>
+    <View style={[styles.itemRow, item.isPacked && styles.itemRowPacked]}>
       {/* Packed checkbox */}
       <TouchableOpacity
         onPress={() => togglePacked(item)}
@@ -137,29 +141,45 @@ export function PackingChecklistScreen() {
 
       {/* Item info */}
       <View style={styles.itemInfo}>
-        <Text style={[styles.itemName, item.isPacked && styles.itemNameDone]} numberOfLines={1}>{item.name}</Text>
+        <Text
+          style={[styles.itemName, item.isPacked && styles.itemNameDone]}
+          numberOfLines={1}
+        >
+          {item.name}
+        </Text>
         <View style={styles.itemMeta}>
-          <Text style={styles.itemQty}>{item.qty} {item.unit}</Text>
+          <Text style={styles.itemQty}>
+            {item.qty} {item.unit}
+          </Text>
           {item.packedBy && (
-            <Text style={styles.packedBy}>by {item.packedBy}</Text>
+            <Text style={styles.packedBy}>· by {item.packedBy}</Text>
           )}
         </View>
       </View>
 
-      {/* Loaded checkbox */}
+      {/* Loaded toggle */}
       <TouchableOpacity
         onPress={() => toggleLoaded(item)}
         style={[styles.loadedBtn, item.isLoaded && styles.loadedBtnActive]}
         activeOpacity={0.7}
       >
-        <Ionicons name="car-outline" size={13} color={item.isLoaded ? Colors.white : Colors.textMuted} />
-        <Text style={[styles.loadedText, item.isLoaded && styles.loadedTextActive]}>
+        <Ionicons
+          name="car-outline"
+          size={13}
+          color={item.isLoaded ? Colors.white : Colors.textMuted}
+        />
+        <Text
+          style={[styles.loadedText, item.isLoaded && styles.loadedTextActive]}
+        >
           {item.isLoaded ? 'Loaded' : 'Load'}
         </Text>
       </TouchableOpacity>
 
       {/* Edit button */}
-      <TouchableOpacity onPress={() => setEditingItem(item)} style={styles.editBtn}>
+      <TouchableOpacity
+        onPress={() => setEditingItem(item)}
+        style={styles.editBtn}
+      >
         <Ionicons name="create-outline" size={15} color={Colors.textMuted} />
       </TouchableOpacity>
     </View>
@@ -169,18 +189,27 @@ export function PackingChecklistScreen() {
     const items = grouped[cat];
     if (!items || items.length === 0) return null;
     const catPacked = items.filter((i) => i.isPacked).length;
+    const allDone = catPacked === items.length && items.length > 0;
 
     return (
       <View key={cat} style={styles.categorySection}>
         <View style={styles.categoryHeader}>
           <View style={styles.categoryTitleRow}>
-            <Ionicons name={CATEGORY_ICONS[cat]} size={14} color={Colors.primary[600]} />
+            <View style={[styles.catIconWrap, allDone && styles.catIconWrapDone]}>
+              <Ionicons
+                name={CATEGORY_ICONS[cat]}
+                size={12}
+                color={allDone ? Colors.emerald[600] : Colors.primary[600]}
+              />
+            </View>
             <Text style={styles.categoryTitle}>{CATEGORY_LABELS[cat]}</Text>
-            <View style={styles.catCountChip}>
-              <Text style={styles.catCountText}>{catPacked}/{items.length}</Text>
+            <View style={[styles.catCountChip, allDone && styles.catCountChipDone]}>
+              <Text style={[styles.catCountText, allDone && styles.catCountTextDone]}>
+                {catPacked}/{items.length}
+              </Text>
             </View>
           </View>
-          {catPacked === items.length && items.length > 0 && (
+          {allDone && (
             <Ionicons name="checkmark-circle" size={16} color={Colors.emerald[500]} />
           )}
         </View>
@@ -207,20 +236,55 @@ export function PackingChecklistScreen() {
 
       {/* Progress hero */}
       <View style={styles.progressHero}>
+        {/* Circular percentage */}
         <View style={styles.progressCircle}>
-          <Text style={styles.progressPct}>{pct}%</Text>
-          <Text style={styles.progressLabel}>Packed</Text>
+          <View
+            style={[
+              styles.progressRing,
+              pct === 100 && styles.progressRingDone,
+            ]}
+          >
+            <Text style={[styles.progressPct, pct === 100 && styles.progressPctDone]}>
+              {pct}%
+            </Text>
+            <Text style={styles.progressPctLabel}>packed</Text>
+          </View>
         </View>
+
+        {/* Progress bars + packer */}
         <View style={styles.progressDetails}>
-          <ProgressBar value={progress.packed} total={progress.total} color={Colors.primary[500]} showLabel label="Packed" height={6} />
-          <ProgressBar value={progress.loaded} total={progress.total} color={Colors.emerald[500]} showLabel label="Loaded" height={6} style={{ marginTop: 6 }} />
+          <ProgressBar
+            value={progress.packed}
+            total={progress.total}
+            color={Colors.primary[500]}
+            showLabel
+            label="Packed"
+            height={6}
+          />
+          <ProgressBar
+            value={progress.loaded}
+            total={progress.total}
+            color={Colors.emerald[500]}
+            showLabel
+            label="Loaded"
+            height={6}
+            style={{ marginTop: 6 }}
+          />
+
           {currentPacker ? (
-            <TouchableOpacity onPress={() => setShowPackerModal(true)} style={styles.packerChip}>
+            <TouchableOpacity
+              onPress={() => setShowPackerModal(true)}
+              style={styles.packerChip}
+            >
               <Ionicons name="person-circle-outline" size={14} color={Colors.primary[600]} />
               <Text style={styles.packerChipText}>{currentPacker}</Text>
+              <Ionicons name="chevron-down" size={10} color={Colors.primary[400]} />
             </TouchableOpacity>
           ) : (
-            <TouchableOpacity onPress={() => setShowPackerModal(true)} style={styles.signInBtn}>
+            <TouchableOpacity
+              onPress={() => setShowPackerModal(true)}
+              style={styles.signInBtn}
+            >
               <Ionicons name="person-add-outline" size={14} color={Colors.primary[600]} />
               <Text style={styles.signInText}>Sign in as packer</Text>
             </TouchableOpacity>
@@ -228,7 +292,7 @@ export function PackingChecklistScreen() {
         </View>
       </View>
 
-      {/* Filter tabs */}
+      {/* Filter tabs + mark all */}
       <View style={styles.filterRow}>
         {(['all', 'unpacked', 'packed'] as FilterKey[]).map((f) => (
           <TouchableOpacity
@@ -236,7 +300,12 @@ export function PackingChecklistScreen() {
             onPress={() => setFilter(f)}
             style={[styles.filterTab, filter === f && styles.filterTabActive]}
           >
-            <Text style={[styles.filterTabText, filter === f && styles.filterTabTextActive]}>
+            <Text
+              style={[
+                styles.filterTabText,
+                filter === f && styles.filterTabTextActive,
+              ]}
+            >
               {f.charAt(0).toUpperCase() + f.slice(1)}
             </Text>
           </TouchableOpacity>
@@ -248,7 +317,11 @@ export function PackingChecklistScreen() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
         {CATEGORY_ORDER.map(renderCategory)}
 
         {filteredItems.length === 0 && (
@@ -263,12 +336,24 @@ export function PackingChecklistScreen() {
       </ScrollView>
 
       {/* Packer sign-in modal */}
-      <Modal transparent visible={showPackerModal} animationType="slide" onRequestClose={() => setShowPackerModal(false)}>
-        <Pressable style={styles.modalOverlay} onPress={() => setShowPackerModal(false)}>
+      <Modal
+        transparent
+        visible={showPackerModal}
+        animationType="slide"
+        onRequestClose={() => setShowPackerModal(false)}
+      >
+        <Pressable
+          style={styles.modalOverlay}
+          onPress={() => setShowPackerModal(false)}
+        >
           <Pressable style={styles.modalSheet}>
             <View style={styles.modalHandle} />
-            <Text style={styles.modalTitle}>{currentPacker ? 'Change Packer' : 'Sign In as Packer'}</Text>
-            <Text style={styles.modalSub}>Your name will be logged with each packed item.</Text>
+            <Text style={styles.modalTitle}>
+              {currentPacker ? 'Change Packer' : 'Sign In as Packer'}
+            </Text>
+            <Text style={styles.modalSub}>
+              Your name will be logged with each packed item.
+            </Text>
             <TextInput
               value={packerInput}
               onChangeText={setPackerInput}
@@ -278,10 +363,20 @@ export function PackingChecklistScreen() {
               autoCapitalize="words"
               returnKeyType="done"
               onSubmitEditing={handleSignIn}
+              autoFocus
             />
             <View style={styles.modalActions}>
               {currentPacker && (
-                <Button label="Sign Out" onPress={() => { setCurrentPacker(''); setPackerInput(''); setShowPackerModal(false); }} variant="danger" style={styles.flex1} />
+                <Button
+                  label="Sign Out"
+                  onPress={() => {
+                    setCurrentPacker('');
+                    setPackerInput('');
+                    setShowPackerModal(false);
+                  }}
+                  variant="danger"
+                  style={styles.flex1}
+                />
               )}
               <Button label="Confirm" onPress={handleSignIn} style={styles.flex1} />
             </View>
@@ -289,16 +384,41 @@ export function PackingChecklistScreen() {
         </Pressable>
       </Modal>
 
-      {/* Confirm mark all modal */}
-      <Modal transparent visible={showMarkAllConfirm} animationType="fade" onRequestClose={() => setShowMarkAllConfirm(false)}>
-        <Pressable style={styles.modalOverlay} onPress={() => setShowMarkAllConfirm(false)}>
+      {/* Confirm mark all */}
+      <Modal
+        transparent
+        visible={showMarkAllConfirm}
+        animationType="fade"
+        onRequestClose={() => setShowMarkAllConfirm(false)}
+      >
+        <Pressable
+          style={styles.modalOverlay}
+          onPress={() => setShowMarkAllConfirm(false)}
+        >
           <Pressable style={styles.confirmModal}>
-            <Ionicons name="checkmark-done-circle-outline" size={40} color={Colors.primary[500]} />
+            <View style={styles.confirmIconWrap}>
+              <Ionicons
+                name="checkmark-done-circle-outline"
+                size={36}
+                color={Colors.primary[500]}
+              />
+            </View>
             <Text style={styles.modalTitle}>Mark All Packed?</Text>
-            <Text style={styles.modalSub}>This will mark all {progress.total} items as packed by {currentPacker}.</Text>
+            <Text style={styles.modalSub}>
+              This will mark all {progress.total} items as packed by {currentPacker}.
+            </Text>
             <View style={styles.modalActions}>
-              <Button label="Cancel" onPress={() => setShowMarkAllConfirm(false)} variant="secondary" style={styles.flex1} />
-              <Button label="Mark All" onPress={confirmMarkAll} style={styles.flex1} />
+              <Button
+                label="Cancel"
+                onPress={() => setShowMarkAllConfirm(false)}
+                variant="secondary"
+                style={styles.flex1}
+              />
+              <Button
+                label="Mark All"
+                onPress={confirmMarkAll}
+                style={styles.flex1}
+              />
             </View>
           </Pressable>
         </Pressable>
@@ -319,39 +439,90 @@ export function PackingChecklistScreen() {
   );
 }
 
-function EditItemModal({ item, onSave, onClose }: { item: PackingItem; onSave: (item: PackingItem) => void; onClose: () => void }) {
+function EditItemModal({
+  item,
+  onSave,
+  onClose,
+}: {
+  item: PackingItem;
+  onSave: (item: PackingItem) => void;
+  onClose: () => void;
+}) {
   const [name, setName] = useState(item.name);
   const [qty, setQty] = useState(String(item.qty));
   const [unit, setUnit] = useState(item.unit);
   const [notes, setNotes] = useState(item.notes ?? '');
 
   return (
-    <Modal transparent visible animationType="slide" onRequestClose={onClose}>
+    <Modal
+      transparent
+      visible
+      animationType="slide"
+      onRequestClose={onClose}
+    >
       <Pressable style={styles.modalOverlay} onPress={onClose}>
         <Pressable style={styles.modalSheet}>
           <View style={styles.modalHandle} />
           <Text style={styles.modalTitle}>Edit Item</Text>
           <View style={editStyles.field}>
             <Text style={editStyles.label}>Name</Text>
-            <TextInput value={name} onChangeText={setName} style={editStyles.input} placeholderTextColor={Colors.textMuted} />
+            <TextInput
+              value={name}
+              onChangeText={setName}
+              style={editStyles.input}
+              placeholderTextColor={Colors.textMuted}
+            />
           </View>
           <View style={editStyles.row}>
             <View style={[editStyles.field, { flex: 1 }]}>
               <Text style={editStyles.label}>Qty</Text>
-              <TextInput value={qty} onChangeText={setQty} style={editStyles.input} keyboardType="numeric" />
+              <TextInput
+                value={qty}
+                onChangeText={setQty}
+                style={editStyles.input}
+                keyboardType="numeric"
+              />
             </View>
             <View style={[editStyles.field, { flex: 1 }]}>
               <Text style={editStyles.label}>Unit</Text>
-              <TextInput value={unit} onChangeText={setUnit} style={editStyles.input} />
+              <TextInput
+                value={unit}
+                onChangeText={setUnit}
+                style={editStyles.input}
+              />
             </View>
           </View>
           <View style={editStyles.field}>
             <Text style={editStyles.label}>Notes</Text>
-            <TextInput value={notes} onChangeText={setNotes} style={[editStyles.input, editStyles.textarea]} multiline placeholder="Optional notes…" placeholderTextColor={Colors.textMuted} />
+            <TextInput
+              value={notes}
+              onChangeText={setNotes}
+              style={[editStyles.input, editStyles.textarea]}
+              multiline
+              placeholder="Optional notes…"
+              placeholderTextColor={Colors.textMuted}
+            />
           </View>
           <View style={styles.modalActions}>
-            <Button label="Cancel" onPress={onClose} variant="secondary" style={styles.flex1} />
-            <Button label="Save" onPress={() => onSave({ ...item, name, qty: parseFloat(qty) || item.qty, unit, notes })} style={styles.flex1} />
+            <Button
+              label="Cancel"
+              onPress={onClose}
+              variant="secondary"
+              style={styles.flex1}
+            />
+            <Button
+              label="Save"
+              onPress={() =>
+                onSave({
+                  ...item,
+                  name,
+                  qty: parseFloat(qty) || item.qty,
+                  unit,
+                  notes,
+                })
+              }
+              style={styles.flex1}
+            />
           </View>
         </Pressable>
       </Pressable>
@@ -361,8 +532,22 @@ function EditItemModal({ item, onSave, onClose }: { item: PackingItem; onSave: (
 
 const editStyles = StyleSheet.create({
   field: { marginBottom: Spacing.sm },
-  label: { fontSize: FontSize.sm, fontWeight: FontWeight.semibold, color: Colors.textPrimary, marginBottom: 4 },
-  input: { borderWidth: 1.5, borderColor: Colors.border, borderRadius: Radius.lg, paddingHorizontal: Spacing.md, paddingVertical: Spacing.sm, fontSize: FontSize.base, color: Colors.textPrimary, backgroundColor: Colors.white },
+  label: {
+    fontSize: FontSize.sm,
+    fontWeight: FontWeight.semibold,
+    color: Colors.textPrimary,
+    marginBottom: 4,
+  },
+  input: {
+    borderWidth: 1.5,
+    borderColor: Colors.border,
+    borderRadius: Radius.lg,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    fontSize: FontSize.base,
+    color: Colors.textPrimary,
+    backgroundColor: Colors.white,
+  },
   textarea: { height: 80, textAlignVertical: 'top' },
   row: { flexDirection: 'row', gap: Spacing.sm },
 });
@@ -370,15 +555,21 @@ const editStyles = StyleSheet.create({
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: Colors.background },
 
+  // ─── Progress hero ────────────────────────────────────────────────────────
   progressHero: {
     backgroundColor: Colors.white,
     padding: Spacing.base,
     flexDirection: 'row',
     gap: Spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.divider,
+    borderBottomColor: Colors.border,
+    alignItems: 'center',
   },
   progressCircle: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  progressRing: {
     width: 72,
     height: 72,
     borderRadius: 36,
@@ -388,14 +579,58 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  progressPct: { fontSize: FontSize.xl, fontWeight: FontWeight.bold, color: Colors.primary[700], lineHeight: 24 },
-  progressLabel: { fontSize: 9, fontWeight: FontWeight.semibold, color: Colors.primary[500], textTransform: 'uppercase' },
+  progressRingDone: {
+    backgroundColor: Colors.emerald[50],
+    borderColor: Colors.emerald[400],
+  },
+  progressPct: {
+    fontSize: FontSize.lg,
+    fontWeight: FontWeight.extrabold,
+    color: Colors.primary[700],
+    lineHeight: 22,
+  },
+  progressPctDone: {
+    color: Colors.emerald[600],
+  },
+  progressPctLabel: {
+    fontSize: 9,
+    fontWeight: FontWeight.semibold,
+    color: Colors.textMuted,
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+  },
   progressDetails: { flex: 1, justifyContent: 'center', gap: 4 },
-  packerChip: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: Colors.primary[50], paddingHorizontal: Spacing.sm, paddingVertical: 3, borderRadius: Radius.full, alignSelf: 'flex-start', marginTop: 4 },
-  packerChipText: { fontSize: FontSize.xs, fontWeight: FontWeight.semibold, color: Colors.primary[700] },
-  signInBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 },
-  signInText: { fontSize: FontSize.xs, color: Colors.primary[600], fontWeight: FontWeight.semibold },
+  packerChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: Colors.primary[50],
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 4,
+    borderRadius: Radius.full,
+    alignSelf: 'flex-start',
+    marginTop: 4,
+    borderWidth: 1,
+    borderColor: Colors.primary[100],
+  },
+  packerChipText: {
+    fontSize: FontSize.xs,
+    fontWeight: FontWeight.bold,
+    color: Colors.primary[700],
+  },
+  signInBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 4,
+  },
+  signInText: {
+    fontSize: FontSize.xs,
+    color: Colors.primary[600],
+    fontWeight: FontWeight.semibold,
+  },
 
+  // ─── Filter row ───────────────────────────────────────────────────────────
   filterRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -404,25 +639,87 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.sm,
     backgroundColor: Colors.white,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.divider,
+    borderBottomColor: Colors.border,
   },
-  filterTab: { paddingHorizontal: Spacing.md, paddingVertical: Spacing.xs + 2, borderRadius: Radius.full, backgroundColor: Colors.slate[100] },
+  filterTab: {
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.xs + 2,
+    borderRadius: Radius.full,
+    backgroundColor: Colors.slate[100],
+  },
   filterTabActive: { backgroundColor: Colors.primary[600] },
-  filterTabText: { fontSize: FontSize.sm, fontWeight: FontWeight.semibold, color: Colors.textSecondary },
+  filterTabText: {
+    fontSize: FontSize.sm,
+    fontWeight: FontWeight.semibold,
+    color: Colors.textSecondary,
+  },
   filterTabTextActive: { color: Colors.white },
   filterSpacer: { flex: 1 },
-  markAllBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: Spacing.sm, paddingVertical: Spacing.xs + 2, borderRadius: Radius.full, backgroundColor: Colors.primary[50] },
-  markAllText: { fontSize: FontSize.xs, fontWeight: FontWeight.semibold, color: Colors.primary[600] },
+  markAllBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.xs + 2,
+    borderRadius: Radius.full,
+    backgroundColor: Colors.primary[50],
+    borderWidth: 1,
+    borderColor: Colors.primary[100],
+  },
+  markAllText: {
+    fontSize: FontSize.xs,
+    fontWeight: FontWeight.bold,
+    color: Colors.primary[600],
+  },
 
+  // ─── Item list ────────────────────────────────────────────────────────────
   scroll: { flex: 1 },
   content: { padding: Spacing.base, gap: Spacing.md, paddingBottom: 80 },
 
   categorySection: { gap: Spacing.xs },
-  categoryHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: Spacing.xs },
-  categoryTitleRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.xs },
-  categoryTitle: { fontSize: FontSize.sm, fontWeight: FontWeight.bold, color: Colors.textSecondary, textTransform: 'uppercase', letterSpacing: 0.5 },
-  catCountChip: { backgroundColor: Colors.slate[100], paddingHorizontal: 6, paddingVertical: 1, borderRadius: Radius.full },
-  catCountText: { fontSize: FontSize.xs, color: Colors.textMuted, fontWeight: FontWeight.semibold },
+  categoryHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: Spacing.xs,
+    paddingHorizontal: Spacing.xs,
+  },
+  categoryTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
+  },
+  catIconWrap: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+    backgroundColor: Colors.primary[50],
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  catIconWrapDone: {
+    backgroundColor: Colors.emerald[50],
+  },
+  categoryTitle: {
+    fontSize: FontSize.sm,
+    fontWeight: FontWeight.bold,
+    color: Colors.textSecondary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
+  },
+  catCountChip: {
+    backgroundColor: Colors.slate[100],
+    paddingHorizontal: 7,
+    paddingVertical: 1,
+    borderRadius: Radius.full,
+  },
+  catCountChipDone: { backgroundColor: Colors.emerald[100] },
+  catCountText: {
+    fontSize: FontSize.xs,
+    color: Colors.textMuted,
+    fontWeight: FontWeight.bold,
+  },
+  catCountTextDone: { color: Colors.emerald[700] },
 
   itemRow: {
     flexDirection: 'row',
@@ -430,33 +727,135 @@ const styles = StyleSheet.create({
     gap: Spacing.sm,
     backgroundColor: Colors.white,
     padding: Spacing.sm,
-    borderRadius: Radius.lg,
+    borderRadius: Radius.xl,
     borderWidth: 1,
     borderColor: Colors.border,
     ...Shadow.xs,
   },
-  checkbox: { width: 24, height: 24, borderRadius: 6, borderWidth: 2, borderColor: Colors.border, alignItems: 'center', justifyContent: 'center', backgroundColor: Colors.white },
-  checkboxPacked: { backgroundColor: Colors.primary[600], borderColor: Colors.primary[600] },
+  itemRowPacked: {
+    opacity: 0.7,
+    backgroundColor: Colors.slate[50],
+  },
+  checkbox: {
+    width: 26,
+    height: 26,
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: Colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: Colors.white,
+  },
+  checkboxPacked: {
+    backgroundColor: Colors.primary[600],
+    borderColor: Colors.primary[600],
+  },
   itemInfo: { flex: 1 },
-  itemName: { fontSize: FontSize.base, fontWeight: FontWeight.medium, color: Colors.textPrimary },
-  itemNameDone: { textDecorationLine: 'line-through', color: Colors.textMuted },
-  itemMeta: { flexDirection: 'row', gap: Spacing.sm, marginTop: 1 },
+  itemName: {
+    fontSize: FontSize.base,
+    fontWeight: FontWeight.semibold,
+    color: Colors.textPrimary,
+  },
+  itemNameDone: {
+    textDecorationLine: 'line-through',
+    color: Colors.textMuted,
+    fontWeight: FontWeight.normal,
+  },
+  itemMeta: { flexDirection: 'row', gap: 4, marginTop: 1 },
   itemQty: { fontSize: FontSize.xs, color: Colors.textMuted },
-  packedBy: { fontSize: FontSize.xs, color: Colors.primary[500], fontStyle: 'italic' },
-  loadedBtn: { flexDirection: 'row', alignItems: 'center', gap: 2, paddingHorizontal: Spacing.sm, paddingVertical: 4, borderRadius: Radius.full, backgroundColor: Colors.slate[100] },
+  packedBy: {
+    fontSize: FontSize.xs,
+    color: Colors.primary[500],
+    fontStyle: 'italic',
+  },
+  loadedBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 5,
+    borderRadius: Radius.full,
+    backgroundColor: Colors.slate[100],
+  },
   loadedBtnActive: { backgroundColor: Colors.emerald[500] },
-  loadedText: { fontSize: FontSize.xs, fontWeight: FontWeight.semibold, color: Colors.textMuted },
+  loadedText: {
+    fontSize: FontSize.xs,
+    fontWeight: FontWeight.bold,
+    color: Colors.textMuted,
+  },
   loadedTextActive: { color: Colors.white },
-  editBtn: { width: 28, height: 28, borderRadius: 8, backgroundColor: Colors.slate[100], alignItems: 'center', justifyContent: 'center' },
+  editBtn: {
+    width: 30,
+    height: 30,
+    borderRadius: 8,
+    backgroundColor: Colors.slate[100],
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 
-  // Modals
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(15,23,42,0.5)', justifyContent: 'flex-end' },
-  modalSheet: { backgroundColor: Colors.white, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: Spacing.xl, paddingBottom: Spacing['3xl'], gap: Spacing.md },
-  modalHandle: { width: 36, height: 4, backgroundColor: Colors.slate[300], borderRadius: 2, alignSelf: 'center', marginBottom: Spacing.sm },
-  modalTitle: { fontSize: FontSize.xl, fontWeight: FontWeight.bold, color: Colors.textPrimary, textAlign: 'center' },
-  modalSub: { fontSize: FontSize.sm, color: Colors.textMuted, textAlign: 'center' },
-  packerInput: { borderWidth: 1.5, borderColor: Colors.border, borderRadius: Radius.xl, paddingHorizontal: Spacing.base, paddingVertical: Spacing.md, fontSize: FontSize.md, color: Colors.textPrimary },
+  // ─── Modals ───────────────────────────────────────────────────────────────
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(15,23,42,0.55)',
+    justifyContent: 'flex-end',
+  },
+  modalSheet: {
+    backgroundColor: Colors.white,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    padding: Spacing.xl,
+    paddingBottom: Spacing['3xl'],
+    gap: Spacing.md,
+  },
+  modalHandle: {
+    width: 40,
+    height: 4,
+    backgroundColor: Colors.slate[300],
+    borderRadius: 2,
+    alignSelf: 'center',
+    marginBottom: Spacing.xs,
+  },
+  modalTitle: {
+    fontSize: FontSize.xl,
+    fontWeight: FontWeight.bold,
+    color: Colors.textPrimary,
+    textAlign: 'center',
+  },
+  modalSub: {
+    fontSize: FontSize.sm,
+    color: Colors.textMuted,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  packerInput: {
+    borderWidth: 1.5,
+    borderColor: Colors.border,
+    borderRadius: Radius.xl,
+    paddingHorizontal: Spacing.base,
+    paddingVertical: Spacing.md,
+    fontSize: FontSize.md,
+    color: Colors.textPrimary,
+    backgroundColor: Colors.slate[50],
+  },
   modalActions: { flexDirection: 'row', gap: Spacing.sm },
   flex1: { flex: 1 },
-  confirmModal: { backgroundColor: Colors.white, borderRadius: 24, padding: Spacing.xl, margin: Spacing.xl, alignItems: 'center', gap: Spacing.md, ...Shadow.lg },
+  confirmModal: {
+    backgroundColor: Colors.white,
+    borderRadius: 28,
+    padding: Spacing.xl,
+    margin: Spacing.xl,
+    alignItems: 'center',
+    gap: Spacing.md,
+    ...Shadow.lg,
+  },
+  confirmIconWrap: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: Colors.primary[50],
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: Colors.primary[100],
+  },
 });

@@ -1,25 +1,31 @@
 export const Colors = {
-  // Brand
+  // PartyAllo brand rainbow (matches logo arc left→right)
+  rainbow: ['#E8302A', '#F5A623', '#F7C948', '#4CAF50', '#14b8a6', '#1A3D7C', '#9C27B0'] as const,
+
+  // Brand accent colours (from logo)
   brand: {
     red: '#E8302A',
     orange: '#F5A623',
-    blue: '#1A3D7C',
-    sky: '#1AB3E8',
+    yellow: '#F7C948',
+    green: '#4CAF50',
+    teal: '#14b8a6',
+    navy: '#1A3D7C',
+    purple: '#9C27B0',
     pink: '#F472B6',
   },
 
-  // Primary (Teal — used as the main app accent)
+  // Primary (Purple — from the PartyAllo logo rainbow arc)
   primary: {
-    50: '#f0fdfa',
-    100: '#ccfbf1',
-    200: '#99f6e4',
-    300: '#5eead4',
-    400: '#2dd4bf',
-    500: '#14b8a6',
-    600: '#0d9488',
-    700: '#0f766e',
-    800: '#115e59',
-    900: '#134e4a',
+    50: '#faf5ff',
+    100: '#f3e8ff',
+    200: '#e9d5ff',
+    300: '#d8b4fe',
+    400: '#c084fc',
+    500: '#a855f7',
+    600: '#9333ea',
+    700: '#7e22ce',
+    800: '#6b21a8',
+    900: '#581c87',
   },
 
   // Slate (neutrals)
@@ -69,7 +75,7 @@ export const Colors = {
     700: '#be123c',
   },
 
-  // Sky (info)
+  // Sky (info / planning)
   sky: {
     50: '#f0f9ff',
     100: '#e0f2fe',
@@ -79,13 +85,13 @@ export const Colors = {
     700: '#0369a1',
   },
 
-  // Violet (packing)
+  // Indigo (packing — distinct from the purple primary)
   violet: {
-    50: '#f5f3ff',
-    100: '#ede9fe',
-    200: '#ddd6fe',
-    500: '#8b5cf6',
-    600: '#7c3aed',
+    50: '#eef2ff',
+    100: '#e0e7ff',
+    200: '#c7d2fe',
+    500: '#6366f1',
+    600: '#4f46e5',
   },
 
   // White / Black
@@ -93,8 +99,8 @@ export const Colors = {
   black: '#000000',
   transparent: 'transparent',
 
-  // Background
-  background: '#f8fafc',
+  // Backgrounds
+  background: '#f8f4ff',
   surface: '#ffffff',
   border: '#e2e8f0',
   divider: '#f1f5f9',

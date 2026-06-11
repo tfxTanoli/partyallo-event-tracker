@@ -34,7 +34,11 @@ const variantStyles: Record<Variant, { container: ViewStyle; text: TextStyle }> 
     text: { color: Colors.white },
   },
   secondary: {
-    container: { backgroundColor: Colors.slate[100], borderWidth: 1, borderColor: Colors.border },
+    container: {
+      backgroundColor: Colors.white,
+      borderWidth: 1.5,
+      borderColor: Colors.border,
+    },
     text: { color: Colors.textPrimary },
   },
   danger: {
@@ -46,22 +50,38 @@ const variantStyles: Record<Variant, { container: ViewStyle; text: TextStyle }> 
     text: { color: Colors.primary[600] },
   },
   outline: {
-    container: { backgroundColor: Colors.transparent, borderWidth: 1.5, borderColor: Colors.primary[500] },
+    container: {
+      backgroundColor: Colors.transparent,
+      borderWidth: 1.5,
+      borderColor: Colors.primary[500],
+    },
     text: { color: Colors.primary[600] },
   },
 };
 
 const sizeStyles: Record<Size, { container: ViewStyle; text: TextStyle }> = {
   sm: {
-    container: { paddingHorizontal: Spacing.md, paddingVertical: Spacing.xs + 2, borderRadius: Radius.md },
-    text: { fontSize: FontSize.sm, fontWeight: FontWeight.semibold },
+    container: {
+      paddingHorizontal: Spacing.md,
+      paddingVertical: Spacing.xs + 2,
+      borderRadius: Radius.lg,
+    },
+    text: { fontSize: FontSize.sm, fontWeight: FontWeight.bold },
   },
   md: {
-    container: { paddingHorizontal: Spacing.base, paddingVertical: Spacing.sm + 2, borderRadius: Radius.lg },
-    text: { fontSize: FontSize.base, fontWeight: FontWeight.semibold },
+    container: {
+      paddingHorizontal: Spacing.base,
+      paddingVertical: Spacing.sm + 2,
+      borderRadius: Radius.xl,
+    },
+    text: { fontSize: FontSize.base, fontWeight: FontWeight.bold },
   },
   lg: {
-    container: { paddingHorizontal: Spacing.xl, paddingVertical: Spacing.md, borderRadius: Radius.xl },
+    container: {
+      paddingHorizontal: Spacing.xl,
+      paddingVertical: Spacing.md,
+      borderRadius: Radius.xl,
+    },
     text: { fontSize: FontSize.md, fontWeight: FontWeight.bold },
   },
 };
@@ -101,9 +121,13 @@ export function Button({
         <ActivityIndicator size="small" color={vs.text.color as string} />
       ) : (
         <View style={styles.inner}>
-          {icon && iconPosition === 'left' && <View style={styles.iconLeft}>{icon}</View>}
+          {icon && iconPosition === 'left' && (
+            <View style={styles.iconLeft}>{icon}</View>
+          )}
           <Text style={[vs.text, ss.text, textStyle]}>{label}</Text>
-          {icon && iconPosition === 'right' && <View style={styles.iconRight}>{icon}</View>}
+          {icon && iconPosition === 'right' && (
+            <View style={styles.iconRight}>{icon}</View>
+          )}
         </View>
       )}
     </TouchableOpacity>

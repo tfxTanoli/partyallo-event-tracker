@@ -20,7 +20,7 @@ import { StationSelectorScreen } from '../screens/packing/StationSelectorScreen'
 import { PackingChecklistScreen } from '../screens/packing/PackingChecklistScreen';
 import { PurchasesScreen } from '../screens/purchases/PurchasesScreen';
 
-// ─── Stack navigators ────────────────────────────────────────────────────────
+// ─── Stack navigators ─────────────────────────────────────────────────────────
 
 const EventsStack = createNativeStackNavigator<EventsStackParamList>();
 function EventsNavigator() {
@@ -57,44 +57,82 @@ function PackingNavigator() {
 
 const Tab = createBottomTabNavigator<RootTabParamList>();
 
-const TAB_ICONS: Record<string, { active: keyof typeof Ionicons.glyphMap; inactive: keyof typeof Ionicons.glyphMap }> = {
-  Dashboard: { active: 'home', inactive: 'home-outline' },
-  Events: { active: 'calendar', inactive: 'calendar-outline' },
-  Catalog: { active: 'storefront', inactive: 'storefront-outline' },
-  Packing: { active: 'cube', inactive: 'cube-outline' },
-  Purchases: { active: 'cart', inactive: 'cart-outline' },
-};
-
-const TAB_LABELS: Record<string, string> = {
-  Dashboard: 'Dashboard',
-  Events: 'Events',
-  Catalog: 'Catalog',
-  Packing: 'Packing',
-  Purchases: 'Purchases',
+const TAB_CONFIG: Record<
+  string,
+  {
+    active: keyof typeof Ionicons.glyphMap;
+    inactive: keyof typeof Ionicons.glyphMap;
+    label: string;
+    color: string;
+  }
+> = {
+  Dashboard: {
+    active: 'home',
+    inactive: 'home-outline',
+    label: 'Home',
+    color: Colors.primary[600],
+  },
+  Events: {
+    active: 'calendar',
+    inactive: 'calendar-outline',
+    label: 'Events',
+    color: Colors.sky[600],
+  },
+  Catalog: {
+    active: 'storefront',
+    inactive: 'storefront-outline',
+    label: 'Catalog',
+    color: Colors.violet[600],
+  },
+  Packing: {
+    active: 'cube',
+    inactive: 'cube-outline',
+    label: 'Packing',
+    color: Colors.amber[600],
+  },
+  Purchases: {
+    active: 'cart',
+    inactive: 'cart-outline',
+    label: 'Purchases',
+    color: Colors.emerald[600],
+  },
 };
 
 export function AppNavigator() {
   return (
     <NavigationContainer>
       <Tab.Navigator
-        screenOptions={({ route }) => ({
-          headerShown: false,
-          tabBarIcon: ({ focused, color, size }) => {
-            const icons = TAB_ICONS[route.name];
-            const iconName = focused ? icons.active : icons.inactive;
-            return <Ionicons name={iconName} size={22} color={color} />;
-          },
-          tabBarLabel: ({ focused, color }) => (
-            <Text style={[tabStyles.label, { color }]}>
-              {TAB_LABELS[route.name]}
-            </Text>
-          ),
-          tabBarActiveTintColor: Colors.primary[600],
-          tabBarInactiveTintColor: Colors.slate[400],
-          tabBarStyle: tabStyles.tabBar,
-          tabBarItemStyle: tabStyles.tabItem,
-          tabBarActiveBackgroundColor: Colors.primary[50],
-        })}
+        screenOptions={({ route }) => {
+          const cfg = TAB_CONFIG[route.name];
+          return {
+            headerShown: false,
+            tabBarIcon: ({ focused, size }) => {
+              const iconName = focused ? cfg.active : cfg.inactive;
+              return (
+                <View style={[tabStyles.iconWrap, focused && { backgroundColor: cfg.color + '18' }]}>
+                  <Ionicons
+                    name={iconName}
+                    size={22}
+                    color={focused ? cfg.color : Colors.slate[400]}
+                  />
+                </View>
+              );
+            },
+            tabBarLabel: ({ focused }) => (
+              <Text
+                style={[
+                  tabStyles.label,
+                  { color: focused ? cfg.color : Colors.slate[400] },
+                  focused && tabStyles.labelActive,
+                ]}
+              >
+                {cfg.label}
+              </Text>
+            ),
+            tabBarStyle: tabStyles.tabBar,
+            tabBarItemStyle: tabStyles.tabItem,
+          };
+        }}
       >
         <Tab.Screen name="Dashboard" component={DashboardScreen} />
         <Tab.Screen name="Events" component={EventsNavigator} />
@@ -110,21 +148,29 @@ const tabStyles = StyleSheet.create({
   tabBar: {
     backgroundColor: Colors.white,
     borderTopWidth: 1,
-    borderTopColor: Colors.divider,
+    borderTopColor: Colors.border,
     paddingBottom: Platform.OS === 'ios' ? 0 : 4,
-    height: Platform.OS === 'ios' ? 82 : 62,
+    height: Platform.OS === 'ios' ? 84 : 64,
     ...Shadow.md,
   },
   tabItem: {
-    borderRadius: 12,
-    margin: 4,
     paddingTop: 4,
     flex: 1,
+  },
+  iconWrap: {
+    width: 46,
+    height: 30,
+    borderRadius: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   label: {
     fontSize: 10,
     fontWeight: FontWeight.semibold,
-    marginTop: 1,
+    marginTop: 0,
     marginBottom: Platform.OS === 'ios' ? 0 : 2,
+  },
+  labelActive: {
+    fontWeight: FontWeight.bold,
   },
 });
