@@ -97,6 +97,7 @@ export type RootTabParamList = {
   Catalog: undefined;
   Packing: undefined;
   Purchases: undefined;
+  Settings: undefined;
 };
 
 export type EventsStackParamList = {

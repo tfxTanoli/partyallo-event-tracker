@@ -112,6 +112,66 @@ export const Colors = {
   textInverse: '#ffffff',
 };
 
+// ─── Theme system ─────────────────────────────────────────────────────────────
+// A "theme" swaps the primary/accent ramp + the tinted app background.
+// Semantic colours (success/warning/danger/info) stay constant across themes
+// so status meaning never changes when a user re-themes the app.
+
+export type Palette = typeof Colors;
+
+type PrimaryRamp = Palette['primary'];
+
+const ramps: Record<string, PrimaryRamp> = {
+  purple: Colors.primary,
+  ocean: {
+    50: '#eff6ff', 100: '#dbeafe', 200: '#bfdbfe', 300: '#93c5fd', 400: '#60a5fa',
+    500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8', 800: '#1e40af', 900: '#1e3a8a',
+  },
+  emerald: {
+    50: '#ecfdf5', 100: '#d1fae5', 200: '#a7f3d0', 300: '#6ee7b7', 400: '#34d399',
+    500: '#10b981', 600: '#059669', 700: '#047857', 800: '#065f46', 900: '#064e3b',
+  },
+  rose: {
+    50: '#fff1f2', 100: '#ffe4e6', 200: '#fecdd3', 300: '#fda4af', 400: '#fb7185',
+    500: '#f43f5e', 600: '#e11d48', 700: '#be123c', 800: '#9f1239', 900: '#881337',
+  },
+  sunset: {
+    50: '#fff7ed', 100: '#ffedd5', 200: '#fed7aa', 300: '#fdba74', 400: '#fb923c',
+    500: '#f97316', 600: '#ea580c', 700: '#c2410c', 800: '#9a3412', 900: '#7c2d12',
+  },
+  midnight: {
+    50: '#eef2ff', 100: '#e0e7ff', 200: '#c7d2fe', 300: '#a5b4fc', 400: '#818cf8',
+    500: '#6366f1', 600: '#4f46e5', 700: '#4338ca', 800: '#3730a3', 900: '#312e81',
+  },
+};
+
+function makePalette(primary: PrimaryRamp, background: string): Palette {
+  return { ...Colors, primary, background };
+}
+
+export interface ThemeOption {
+  id: string;
+  name: string;
+  /** Representative colour shown in the picker swatch */
+  swatch: string;
+  palette: Palette;
+}
+
+export const Themes: ThemeOption[] = [
+  { id: 'purple', name: 'Grape', swatch: ramps.purple[600], palette: Colors },
+  { id: 'ocean', name: 'Ocean', swatch: ramps.ocean[600], palette: makePalette(ramps.ocean, '#f4f8ff') },
+  { id: 'emerald', name: 'Emerald', swatch: ramps.emerald[600], palette: makePalette(ramps.emerald, '#f2fbf6') },
+  { id: 'rose', name: 'Rose', swatch: ramps.rose[600], palette: makePalette(ramps.rose, '#fff4f6') },
+  { id: 'sunset', name: 'Sunset', swatch: ramps.sunset[600], palette: makePalette(ramps.sunset, '#fff8f2') },
+  { id: 'midnight', name: 'Indigo', swatch: ramps.midnight[600], palette: makePalette(ramps.midnight, '#f4f5fc') },
+];
+
+export const DEFAULT_THEME_ID = 'purple';
+
+export function getThemeById(id: string | null | undefined): ThemeOption {
+  return Themes.find((t) => t.id === id) ?? Themes[0];
+}
+
 // Status color mappings
 export const StatusColors: Record<string, { bg: string; text: string; border: string }> = {
   Planning: { bg: Colors.sky[50], text: Colors.sky[600], border: Colors.sky[200] },

@@ -14,7 +14,8 @@ import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { useApp } from '../../context/AppContext';
-import { Colors } from '../../constants/colors';
+import { Colors, Palette } from '../../constants/colors';
+import { useTheme, useThemedStyles } from '../../context/ThemeContext';
 import { Spacing, FontSize, FontWeight, Radius } from '../../constants/theme';
 import { Input } from '../../components/common/Input';
 import { Button } from '../../components/common/Button';
@@ -38,6 +39,8 @@ const CATEGORIES: LiveStationCategory[] = [
 const ITEM_CATEGORIES: PackingItemCategory[] = ['default', 'Live station', 'Fresh food', 'Others'];
 
 export function StationFormScreen() {
+  const { colors: Colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const navigation = useNavigation<Nav>();
   const route = useRoute<RouteType>();
   const { stations, createStation, updateStation } = useApp();
@@ -236,7 +239,7 @@ export function StationFormScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (Colors: Palette) => StyleSheet.create({
   safe: { flex: 1, backgroundColor: Colors.background },
   scroll: { flex: 1 },
   content: { padding: Spacing.base, gap: Spacing.md, paddingBottom: Spacing['4xl'] },

@@ -6,6 +6,7 @@ const KEYS = {
   PURCHASES: 'partyallo_purchases',
   SETTINGS: 'partyallo_settings',
   PACKER: 'partyallo_packer',
+  THEME: 'partyallo_theme',
 };
 
 export { KEYS };

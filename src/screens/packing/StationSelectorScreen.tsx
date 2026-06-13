@@ -13,7 +13,8 @@ import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { useApp } from '../../context/AppContext';
-import { Colors, CategoryColors } from '../../constants/colors';
+import { Colors, Palette, CategoryColors } from '../../constants/colors';
+import { useTheme, useThemedStyles } from '../../context/ThemeContext';
 import { Spacing, FontSize, FontWeight, Radius, Shadow } from '../../constants/theme';
 import { Badge } from '../../components/common/Badge';
 import { AppHeader } from '../../components/common/AppHeader';
@@ -26,6 +27,8 @@ type Nav = NativeStackNavigationProp<PackingStackParamList, 'StationSelector'>;
 type RouteType = RouteProp<PackingStackParamList, 'StationSelector'>;
 
 export function StationSelectorScreen() {
+  const { colors: Colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const navigation = useNavigation<Nav>();
   const route = useRoute<RouteType>();
   const { events, stations } = useApp();
@@ -163,7 +166,7 @@ export function StationSelectorScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (Colors: Palette) => StyleSheet.create({
   safe: { flex: 1, backgroundColor: Colors.background },
 
   eventBannerWrap: {

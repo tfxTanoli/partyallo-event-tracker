@@ -13,7 +13,8 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { useApp } from '../../context/AppContext';
-import { Colors, StatusColors } from '../../constants/colors';
+import { Colors, Palette, StatusColors } from '../../constants/colors';
+import { useTheme, useThemedStyles } from '../../context/ThemeContext';
 import { Spacing, FontSize, FontWeight, Radius, Shadow } from '../../constants/theme';
 import { Badge } from '../../components/common/Badge';
 import { Button } from '../../components/common/Button';
@@ -36,6 +37,8 @@ const STATUS_TABS = [
 ];
 
 export function EventsListScreen() {
+  const { colors: Colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const navigation = useNavigation<Nav>();
   const { events, deleteEvent, selectEventForPacking } = useApp();
   const [search, setSearch] = useState('');
@@ -267,7 +270,7 @@ export function EventsListScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (Colors: Palette) => StyleSheet.create({
   safe: { flex: 1, backgroundColor: Colors.background },
 
   // ─── Header ──────────────────────────────────────────────────────────────

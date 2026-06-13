@@ -8,7 +8,8 @@ import {
   TextStyle,
   View,
 } from 'react-native';
-import { Colors } from '../../constants/colors';
+import { Colors, Palette } from '../../constants/colors';
+import { useTheme } from '../../context/ThemeContext';
 import { Radius, Spacing, FontSize, FontWeight, Shadow } from '../../constants/theme';
 
 type Variant = 'primary' | 'secondary' | 'danger' | 'ghost' | 'outline';
@@ -28,7 +29,7 @@ interface ButtonProps {
   textStyle?: TextStyle;
 }
 
-const variantStyles: Record<Variant, { container: ViewStyle; text: TextStyle }> = {
+const makeVariantStyles = (Colors: Palette): Record<Variant, { container: ViewStyle; text: TextStyle }> => ({
   primary: {
     container: { backgroundColor: Colors.primary[600] },
     text: { color: Colors.white },
@@ -57,7 +58,7 @@ const variantStyles: Record<Variant, { container: ViewStyle; text: TextStyle }> 
     },
     text: { color: Colors.primary[600] },
   },
-};
+});
 
 const sizeStyles: Record<Size, { container: ViewStyle; text: TextStyle }> = {
   sm: {
@@ -99,7 +100,8 @@ export function Button({
   style,
   textStyle,
 }: ButtonProps) {
-  const vs = variantStyles[variant];
+  const { colors: Colors } = useTheme();
+  const vs = makeVariantStyles(Colors)[variant];
   const ss = sizeStyles[size];
   const isDisabled = disabled || loading;
 

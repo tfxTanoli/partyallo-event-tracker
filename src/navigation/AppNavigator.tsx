@@ -5,7 +5,8 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 
-import { Colors } from '../constants/colors';
+import { Colors, Palette } from '../constants/colors';
+import { useTheme, useThemedStyles } from '../context/ThemeContext';
 import { FontSize, FontWeight, Shadow } from '../constants/theme';
 import { RootTabParamList, EventsStackParamList, CatalogStackParamList, PackingStackParamList } from '../types';
 
@@ -19,6 +20,7 @@ import { PackingHomeScreen } from '../screens/packing/PackingHomeScreen';
 import { StationSelectorScreen } from '../screens/packing/StationSelectorScreen';
 import { PackingChecklistScreen } from '../screens/packing/PackingChecklistScreen';
 import { PurchasesScreen } from '../screens/purchases/PurchasesScreen';
+import { SettingsScreen } from '../screens/settings/SettingsScreen';
 
 // ─── Stack navigators ─────────────────────────────────────────────────────────
 
@@ -57,15 +59,14 @@ function PackingNavigator() {
 
 const Tab = createBottomTabNavigator<RootTabParamList>();
 
-const TAB_CONFIG: Record<
-  string,
-  {
-    active: keyof typeof Ionicons.glyphMap;
-    inactive: keyof typeof Ionicons.glyphMap;
-    label: string;
-    color: string;
-  }
-> = {
+type TabConfigEntry = {
+  active: keyof typeof Ionicons.glyphMap;
+  inactive: keyof typeof Ionicons.glyphMap;
+  label: string;
+  color: string;
+};
+
+const makeTabConfig = (Colors: Palette): Record<string, TabConfigEntry> => ({
   Dashboard: {
     active: 'home',
     inactive: 'home-outline',
@@ -96,9 +97,18 @@ const TAB_CONFIG: Record<
     label: 'Purchases',
     color: Colors.emerald[600],
   },
-};
+  Settings: {
+    active: 'settings',
+    inactive: 'settings-outline',
+    label: 'Settings',
+    color: Colors.primary[600],
+  },
+});
 
 export function AppNavigator() {
+  const { colors: Colors } = useTheme();
+  const TAB_CONFIG = makeTabConfig(Colors);
+  const tabStyles = useThemedStyles(makeTabStyles);
   return (
     <NavigationContainer>
       <Tab.Navigator
@@ -139,12 +149,13 @@ export function AppNavigator() {
         <Tab.Screen name="Catalog" component={CatalogNavigator} />
         <Tab.Screen name="Packing" component={PackingNavigator} />
         <Tab.Screen name="Purchases" component={PurchasesScreen} />
+        <Tab.Screen name="Settings" component={SettingsScreen} />
       </Tab.Navigator>
     </NavigationContainer>
   );
 }
 
-const tabStyles = StyleSheet.create({
+const makeTabStyles = (Colors: Palette) => StyleSheet.create({
   tabBar: {
     backgroundColor: Colors.white,
     borderTopWidth: 1,

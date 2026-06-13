@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, ViewStyle, TextStyle } from 'react-native';
-import { Colors, StatusColors, CategoryColors } from '../../constants/colors';
+import { Palette, StatusColors, CategoryColors } from '../../constants/colors';
+import { useTheme } from '../../context/ThemeContext';
 import { Radius, Spacing, FontSize, FontWeight } from '../../constants/theme';
 
 interface BadgeProps {
@@ -13,7 +14,8 @@ interface BadgeProps {
 }
 
 export function Badge({ label, variant = 'default', size = 'sm', style, textStyle, dot }: BadgeProps) {
-  const colors = getBadgeColors(variant, label);
+  const { colors: palette } = useTheme();
+  const colors = getBadgeColors(variant, label, palette);
 
   return (
     <View style={[styles.base, size === 'md' ? styles.md : styles.sm, { backgroundColor: colors.bg, borderColor: colors.border }, style]}>
@@ -25,7 +27,7 @@ export function Badge({ label, variant = 'default', size = 'sm', style, textStyl
   );
 }
 
-function getBadgeColors(variant: string, label: string): { bg: string; text: string; border: string } {
+function getBadgeColors(variant: string, label: string, Colors: Palette): { bg: string; text: string; border: string } {
   if (variant === 'status' && StatusColors[label]) {
     const c = StatusColors[label];
     return { bg: c.bg, text: c.text, border: c.border };

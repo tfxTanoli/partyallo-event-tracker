@@ -14,7 +14,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
 import { useApp } from '../../context/AppContext';
-import { Colors, CategoryColors } from '../../constants/colors';
+import { Colors, Palette, CategoryColors } from '../../constants/colors';
+import { useTheme, useThemedStyles } from '../../context/ThemeContext';
 import { Spacing, FontSize, FontWeight, Radius, Shadow } from '../../constants/theme';
 import { Badge } from '../../components/common/Badge';
 import { Button } from '../../components/common/Button';
@@ -61,6 +62,8 @@ const DEFAULT_FORM: Omit<PurchaseRegistryItem, 'id' | 'createdAt'> = {
 };
 
 export function PurchasesScreen() {
+  const { colors: Colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const { purchases, createPurchase, updatePurchase, deletePurchase, togglePurchased } =
     useApp();
   const [search, setSearch] = useState('');
@@ -431,7 +434,7 @@ export function PurchasesScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (Colors: Palette) => StyleSheet.create({
   safe: { flex: 1, backgroundColor: Colors.background },
 
   header: {

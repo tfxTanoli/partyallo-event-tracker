@@ -17,7 +17,8 @@ import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { useApp } from '../../context/AppContext';
-import { Colors } from '../../constants/colors';
+import { Colors, Palette } from '../../constants/colors';
+import { useTheme, useThemedStyles } from '../../context/ThemeContext';
 import { Spacing, FontSize, FontWeight, Radius, Shadow } from '../../constants/theme';
 import { AppHeader } from '../../components/common/AppHeader';
 import { ProgressBar } from '../../components/common/ProgressBar';
@@ -46,6 +47,8 @@ const CATEGORY_ICONS: Record<string, keyof typeof Ionicons.glyphMap> = {
 type FilterKey = 'all' | 'unpacked' | 'packed';
 
 export function PackingChecklistScreen() {
+  const { colors: Colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const navigation = useNavigation<Nav>();
   const route = useRoute<RouteType>();
   const { events, stations, currentPacker, setCurrentPacker, updatePackingItem, markAllPacked } =
@@ -448,6 +451,7 @@ function EditItemModal({
   onSave: (item: PackingItem) => void;
   onClose: () => void;
 }) {
+  const styles = useThemedStyles(makeStyles);
   const [name, setName] = useState(item.name);
   const [qty, setQty] = useState(String(item.qty));
   const [unit, setUnit] = useState(item.unit);
@@ -552,7 +556,7 @@ const editStyles = StyleSheet.create({
   row: { flexDirection: 'row', gap: Spacing.sm },
 });
 
-const styles = StyleSheet.create({
+const makeStyles = (Colors: Palette) => StyleSheet.create({
   safe: { flex: 1, backgroundColor: Colors.background },
 
   // ─── Progress hero ────────────────────────────────────────────────────────

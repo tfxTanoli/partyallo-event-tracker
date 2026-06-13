@@ -13,7 +13,8 @@ import { useNavigation } from '@react-navigation/native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 
 import { useApp } from '../../context/AppContext';
-import { Colors } from '../../constants/colors';
+import { Colors, Palette } from '../../constants/colors';
+import { useTheme, useThemedStyles } from '../../context/ThemeContext';
 import { Spacing, FontSize, FontWeight, Radius, Shadow } from '../../constants/theme';
 import { Badge } from '../../components/common/Badge';
 import { ProgressBar } from '../../components/common/ProgressBar';
@@ -45,6 +46,8 @@ const STAT_CONFIG: Array<{
 
 export function DashboardScreen() {
   const navigation = useNavigation<DashboardNav>();
+  const { colors: Colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const { events, stations, purchases, selectEventForPacking, settings } = useApp();
 
   const stats = useMemo(
@@ -333,7 +336,7 @@ export function DashboardScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (Colors: Palette) => StyleSheet.create({
   safe: {
     flex: 1,
     backgroundColor: Colors.primary[800],

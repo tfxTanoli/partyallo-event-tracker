@@ -15,7 +15,8 @@ import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { useApp } from '../../context/AppContext';
-import { Colors } from '../../constants/colors';
+import { Colors, Palette } from '../../constants/colors';
+import { useTheme, useThemedStyles } from '../../context/ThemeContext';
 import { Spacing, FontSize, FontWeight, Radius, Shadow } from '../../constants/theme';
 import { Input } from '../../components/common/Input';
 import { Button } from '../../components/common/Button';
@@ -44,6 +45,8 @@ const EMPTY_ITEM: Omit<PackingItem, 'id'> = {
 };
 
 export function EventFormScreen() {
+  const { colors: Colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const navigation = useNavigation<Nav>();
   const route = useRoute<RouteType>();
   const { events, stations, createEvent, updateEvent } = useApp();
@@ -305,6 +308,8 @@ export function EventFormScreen() {
 }
 
 function SectionCard({ title, icon, children }: { title: string; icon: keyof typeof Ionicons.glyphMap; children: React.ReactNode }) {
+  const { colors: Colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   return (
     <Card style={styles.sectionCard}>
       <View style={styles.sectionHeader}>
@@ -318,7 +323,7 @@ function SectionCard({ title, icon, children }: { title: string; icon: keyof typ
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (Colors: Palette) => StyleSheet.create({
   safe: { flex: 1, backgroundColor: Colors.background },
   scroll: { flex: 1 },
   content: { padding: Spacing.base, gap: Spacing.md, paddingBottom: Spacing['4xl'] },

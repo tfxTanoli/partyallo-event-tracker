@@ -8,7 +8,8 @@ import {
   TextStyle,
   TouchableOpacity,
 } from 'react-native';
-import { Colors } from '../../constants/colors';
+import { Colors, Palette } from '../../constants/colors';
+import { useThemedStyles } from '../../context/ThemeContext';
 import { Radius, Spacing, FontSize, FontWeight, Shadow } from '../../constants/theme';
 
 interface InputProps {
@@ -53,6 +54,7 @@ export function Input({
   autoCapitalize = 'sentences',
 }: InputProps) {
   const [focused, setFocused] = useState(false);
+  const styles = useThemedStyles(makeStyles);
 
   return (
     <View style={[styles.container, containerStyle]}>
@@ -110,7 +112,7 @@ export function Input({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (Colors: Palette) => StyleSheet.create({
   container: {
     marginBottom: Spacing.md,
   },

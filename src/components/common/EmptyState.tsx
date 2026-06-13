@@ -1,7 +1,8 @@
 import React from 'react';
 import { View, Text, StyleSheet, ViewStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Colors } from '../../constants/colors';
+import { Palette } from '../../constants/colors';
+import { useTheme, useThemedStyles } from '../../context/ThemeContext';
 import { Spacing, FontSize, FontWeight, Radius } from '../../constants/theme';
 import { Button } from './Button';
 
@@ -22,6 +23,8 @@ export function EmptyState({
   onAction,
   style,
 }: EmptyStateProps) {
+  const { colors: Colors } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   return (
     <View style={[styles.container, style]}>
       <View style={styles.iconWrapper}>
@@ -36,7 +39,7 @@ export function EmptyState({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (Colors: Palette) => StyleSheet.create({
   container: {
     alignItems: 'center',
     justifyContent: 'center',

@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, ViewStyle } from 'react-native';
 import { Colors } from '../../constants/colors';
+import { useTheme } from '../../context/ThemeContext';
 import { Radius, FontSize, FontWeight } from '../../constants/theme';
 
 interface ProgressBarProps {
@@ -17,13 +18,15 @@ interface ProgressBarProps {
 export function ProgressBar({
   value,
   total,
-  color = Colors.primary[500],
+  color,
   trackColor = Colors.slate[100],
   height = 6,
   showLabel = false,
   label,
   style,
 }: ProgressBarProps) {
+  const { colors } = useTheme();
+  const fillColor = color ?? colors.primary[500];
   const pct = total ? Math.min((value / total) * 100, 100) : Math.min(value, 100);
   const displayPct = Math.round(pct);
 
@@ -45,7 +48,7 @@ export function ProgressBar({
             styles.fill,
             {
               width: `${displayPct}%` as `${number}%`,
-              backgroundColor: color,
+              backgroundColor: fillColor,
               height,
               borderRadius: height,
             },

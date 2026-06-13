@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet, ViewStyle } from 'react-native';
-import { Colors } from '../../constants/colors';
+import { Palette } from '../../constants/colors';
+import { useThemedStyles } from '../../context/ThemeContext';
 import { Radius, Spacing, FontSize, FontWeight } from '../../constants/theme';
 
 interface FilterTab {
@@ -17,6 +18,7 @@ interface FilterTabsProps {
 }
 
 export function FilterTabs({ tabs, activeKey, onSelect, style }: FilterTabsProps) {
+  const styles = useThemedStyles(makeStyles);
   return (
     <ScrollView
       horizontal
@@ -47,7 +49,7 @@ export function FilterTabs({ tabs, activeKey, onSelect, style }: FilterTabsProps
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (Colors: Palette) => StyleSheet.create({
   container: {
     flexDirection: 'row',
     gap: Spacing.xs,
